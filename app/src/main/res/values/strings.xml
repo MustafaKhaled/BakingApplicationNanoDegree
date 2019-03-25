@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">BakingApplicationNanoDegree</string>
+    <string name="ingredient_text">Ingredient</string>
+    <string name="steps_text">Steps</string>
+    <string name="next_btn">Next</string>
+    <string name="previous_btn">Previous</string>
+</resources>
