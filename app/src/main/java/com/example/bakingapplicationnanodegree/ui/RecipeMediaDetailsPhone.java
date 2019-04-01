@@ -127,6 +127,9 @@ public class RecipeMediaDetailsPhone extends AppCompatActivity implements View.O
 
     @Override
     public void onClick(View v) {
+
+        RecipeStepsFragment mRecipeStepFragment = new RecipeStepsFragment();
+        RecipeMediaFragment mRecipeMediaFragment = new RecipeMediaFragment();
         Button b = (Button) v;
         switch (b.getId()){
             case R.id.next_btn:
@@ -135,8 +138,12 @@ public class RecipeMediaDetailsPhone extends AppCompatActivity implements View.O
                 Log.d(TAG, "onClick: The current step is: "+currentStep);
                 checkLastStep(currentStep);
                 checkVideoUrl(stepsArrayList.get(currentStep).getVideoURL());
-                recipeStepsDesc.setStepDetails(stepsArrayList.get(currentStep).getDescription());
-                recipeMediaFragment.setVideo(stepsArrayList.get(currentStep).getVideoURL());
+
+                getSupportFragmentManager().beginTransaction().replace(R.id.recipe_steps_container,mRecipeStepFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.recipe_media_container,mRecipeMediaFragment).commit();
+
+                mRecipeStepFragment.setStepDetails(stepsArrayList.get(currentStep).getDescription());
+                mRecipeMediaFragment.setVideo(stepsArrayList.get(currentStep).getVideoURL());
                 break;
 
             case R.id.previous_btn:
@@ -145,8 +152,12 @@ public class RecipeMediaDetailsPhone extends AppCompatActivity implements View.O
                 Log.d(TAG, "onClick: The current step is: "+currentStep);
                 checkLastStep(currentStep);
                 checkVideoUrl(stepsArrayList.get(currentStep).getVideoURL());
-                recipeStepsDesc.setStepDetails(stepsArrayList.get(currentStep).getDescription());
-                recipeMediaFragment.setVideo(stepsArrayList.get(currentStep).getVideoURL());
+
+                getSupportFragmentManager().beginTransaction().replace(R.id.recipe_steps_container,mRecipeStepFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.recipe_media_container,mRecipeMediaFragment).commit();
+
+                mRecipeStepFragment.setStepDetails(stepsArrayList.get(currentStep).getDescription());
+                mRecipeMediaFragment.setVideo(stepsArrayList.get(currentStep).getVideoURL());
 
                 break;
         }

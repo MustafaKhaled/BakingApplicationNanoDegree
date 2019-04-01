@@ -4,4 +4,7 @@
     <string name="steps_text">Steps</string>
     <string name="next_btn">Next</string>
     <string name="previous_btn">Previous</string>
+    <string name="add_favorite">Favorite Recipe</string>
+    <string name="remove_favorite">Remove Favorite</string>
+    <string name="desired_recipe">Desired Recipe</string>
 </resources>

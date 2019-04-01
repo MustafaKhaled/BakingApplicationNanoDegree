@@ -50,17 +50,31 @@ public class RecipeMediaFragment extends Fragment {
     PlayerView playerView;
     SimpleExoPlayer simpleExoPlayer;
 
+    String mVideoUrl;
+
     public RecipeMediaFragment() {
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        RecipeMediaDetailsPhone recipeMediaDetailsPhone = (RecipeMediaDetailsPhone) getActivity();
         View view = inflater.inflate(R.layout.recipe_step_media_details_fragment, container, false);
         playerView = view.findViewById(R.id.videoFullScreenPlayer);
         initializePlayer();
-        setVideo(recipeMediaDetailsPhone.setChosenVideo());
+        if(getResources().getBoolean(R.bool.isTablet))
+            buildMediaSource(Uri.parse(mVideoUrl));
+        else {
+            RecipeMediaDetailsPhone recipeMediaDetailsPhone = (RecipeMediaDetailsPhone) getActivity();
+            if (recipeMediaDetailsPhone != null) {
+            setVideo(recipeMediaDetailsPhone.setChosenVideo());
+            buildMediaSource(Uri.parse(mVideoUrl));
+
+            }
+//
+//            RecipeMediaDetailsPhone recipeMediaDetailsPhone = (RecipeMediaDetailsPhone) getActivity();
+//            recipeDesc.setText(recipeMediaDetailsPhone.setChosenData());
+        }
+
 //        buildMediaSource(Uri.parse("https://d17h27t6h515a5.cloudfront.net/topher/2017/April/58ffda45_9-add-mixed-nutella-to-crust-creampie/9-add-mixed-nutella-to-crust-creampie.mp4"));
         return view;
     }
@@ -78,8 +92,6 @@ public class RecipeMediaFragment extends Fragment {
     }
 
     private void initializePlayer() {
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.exo_controls_fastforward);
-
         if (simpleExoPlayer == null) {
             // 1. Create a default TrackSelector
             LoadControl loadControl = new DefaultLoadControl(
@@ -101,26 +113,35 @@ public class RecipeMediaFragment extends Fragment {
     }
 
     public void setVideo(String videoUrl){
-        buildMediaSource(Uri.parse(videoUrl));
+        this.mVideoUrl = videoUrl;
     }
 
 
 
     private void buildMediaSource( Uri mUri) {
             Log.d(TAG, "buildMediaSource: There is a video for the current step");
-            playerView.setVisibility(View.VISIBLE);
-        // Measures bandwidth during playback. Can be null if not required.
-        DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
-        // Produces DataSource instances through which media data is loaded.
-        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(getContext(),
-                Util.getUserAgent(getActivity(), getString(R.string.app_name)), bandwidthMeter);
-        // This is the MediaSource representing the media to be played.
-        MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                .createMediaSource(mUri);
-        // Prepare the player with the source.
-        simpleExoPlayer.prepare(videoSource);
 
-        simpleExoPlayer.setPlayWhenReady(true);
+            if(mUri!=null){
+                playerView.setVisibility(View.VISIBLE);
+                // Measures bandwidth during playback. Can be null if not required.
+                DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
+                // Produces DataSource instances through which media data is loaded.
+                DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(getContext(),
+                        Util.getUserAgent(getActivity(), getString(R.string.app_name)), bandwidthMeter);
+                // This is the MediaSource representing the media to be played.
+                MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(mUri);
+                // Prepare the player with the source.
+                simpleExoPlayer.prepare(videoSource);
+
+                simpleExoPlayer.setPlayWhenReady(true);
+            }
+
         }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        simpleExoPlayer.release();
+    }
 }

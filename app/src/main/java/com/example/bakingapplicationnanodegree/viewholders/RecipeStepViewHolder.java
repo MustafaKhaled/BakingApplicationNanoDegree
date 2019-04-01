@@ -11,16 +11,16 @@ import com.example.bakingapplicationnanodegree.models.StepsItem;
 
 public class RecipeStepViewHolder extends RecyclerView.ViewHolder {
     TextView stepHeader;
-    TextView stepDetails;
+//    TextView stepDetails;
     public RecipeStepViewHolder(@NonNull View itemView) {
         super(itemView);
         stepHeader = itemView.findViewById(R.id.step_header);
-        stepDetails = itemView.findViewById(R.id.step_details);
+//        stepDetails = itemView.findViewById(R.id.step_details);
     }
 
     public void bind(StepsItem stepsItem, final StepClickListener stepClickListener){
         stepHeader.setText(stepsItem.getShortDescription());
-        stepDetails.setText(stepsItem.getDescription());
+//        stepDetails.setText(stepsItem.getDescription());
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

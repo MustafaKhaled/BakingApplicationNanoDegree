@@ -6,11 +6,11 @@
     >
 
 <fragment
-    android:id="@+id/list_fragment"
+    android:id="@+id/steps_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_weight="1"
-    android:name="com.example.bakingapplicationnanodegree.fragments.RecipeStepsFragment"
+    android:name="com.example.bakingapplicationnanodegree.fragments.AllStepsFragment"
     />
 
 <LinearLayout

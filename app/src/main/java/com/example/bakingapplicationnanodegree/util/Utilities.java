@@ -1,5 +1,7 @@
 package com.example.bakingapplicationnanodegree.util;
 
+import com.example.bakingapplicationnanodegree.models.RecipesListItem;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +24,22 @@ public class Utilities {
 
         return json;
     }
+
+    public static String prepareIngredientToBeShown(RecipesListItem recipesListItem){
+        StringBuilder fullIngredients=new StringBuilder();
+        for (int i=0; i<recipesListItem.getIngredients().size();i++) {
+            if (i != recipesListItem.getIngredients().size() - 1) {
+                fullIngredients.append(recipesListItem.getIngredients().get(i).getIngredient());
+                fullIngredients.append(" - ");
+            }
+            else{
+                fullIngredients.append(recipesListItem.getIngredients().get(i).getIngredient());
+            }
+        }
+        return fullIngredients.toString();
+    }
+
+
 
 
 }

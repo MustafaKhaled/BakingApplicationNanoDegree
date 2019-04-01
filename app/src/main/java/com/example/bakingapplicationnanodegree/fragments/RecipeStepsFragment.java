@@ -16,7 +16,7 @@ import com.example.bakingapplicationnanodegree.ui.RecipeMediaDetailsPhone;
 public class RecipeStepsFragment extends Fragment {
     private static final String TAG = "RecipeStepsFragment";
     TextView recipeDesc;
-    String mStep;
+    String mStep,mVideoUrl;
     public RecipeStepsFragment() {
     }
 
@@ -24,13 +24,18 @@ public class RecipeStepsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView: Creating Recipe details fragment");
-        RecipeMediaDetailsPhone recipeMediaDetailsPhone = (RecipeMediaDetailsPhone) getActivity();
-        View view=null;
-        if(view==null){
-            view= inflater.inflate(R.layout.recipe_step_details_fragment,container,false);
-        }
+          View  view= inflater.inflate(R.layout.recipe_step_details_fragment,container,false);
+
         recipeDesc = view.findViewById(R.id.recipe_description);
-        recipeDesc.setText(recipeMediaDetailsPhone.setChosenData());
+
+
+        if(getResources().getBoolean(R.bool.isTablet))
+            recipeDesc.setText(mStep);
+
+        else {
+            RecipeMediaDetailsPhone recipeMediaDetailsPhone = (RecipeMediaDetailsPhone) getActivity();
+            recipeDesc.setText(recipeMediaDetailsPhone.setChosenData());
+        }
         return view;
     }
 
@@ -38,6 +43,9 @@ public class RecipeStepsFragment extends Fragment {
     public void setStepDetails(String step){
         Log.d(TAG, "setStepDetails: set the text to "+ step);
         this.mStep = step;
-        recipeDesc.setText(mStep);
     }
+
+
+
+
 }

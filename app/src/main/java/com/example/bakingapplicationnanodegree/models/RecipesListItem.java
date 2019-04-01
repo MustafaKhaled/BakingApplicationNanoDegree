@@ -115,6 +115,9 @@ public class RecipesListItem implements Parcelable{
 		return 0;
 	}
 
+	public RecipesListItem() {
+	}
+
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeString(image);
