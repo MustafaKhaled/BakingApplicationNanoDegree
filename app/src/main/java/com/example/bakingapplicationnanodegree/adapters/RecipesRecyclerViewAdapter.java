@@ -10,9 +10,12 @@ import android.view.ViewGroup;
 import com.example.bakingapplicationnanodegree.R;
 import com.example.bakingapplicationnanodegree.interfaces.RecipeClickListener;
 import com.example.bakingapplicationnanodegree.models.RecipesListItem;
+import com.example.bakingapplicationnanodegree.ui.MainActivity;
 import com.example.bakingapplicationnanodegree.viewholders.RecipesViewHolder;
 
 import java.util.ArrayList;
+
+import retrofit2.Callback;
 
 public class RecipesRecyclerViewAdapter extends RecyclerView.Adapter<RecipesViewHolder> {
     Context mContext;
@@ -23,6 +26,7 @@ public class RecipesRecyclerViewAdapter extends RecyclerView.Adapter<RecipesView
         this.recipesListItems = recipesListItems;
         this.mRecipeClickListener = recipeClickListener;
     }
+
 
     @NonNull
     @Override

@@ -12,8 +12,11 @@ import android.view.View;
 
 import com.example.bakingapplicationnanodegree.R;
 import com.example.bakingapplicationnanodegree.adapters.RecipesRecyclerViewAdapter;
+import com.example.bakingapplicationnanodegree.di.component.RetrofitComponent;
+import com.example.bakingapplicationnanodegree.interfaces.GetBackingRecipe;
 import com.example.bakingapplicationnanodegree.interfaces.RecipeClickListener;
 import com.example.bakingapplicationnanodegree.models.RecipesListItem;
+import com.example.bakingapplicationnanodegree.util.MyApplication;
 import com.example.bakingapplicationnanodegree.util.Utilities;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -21,37 +24,59 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class MainActivity extends AppCompatActivity implements RecipeClickListener {
     private static final String TAG = "MainActivity";
+
+    @Inject
+    GetBackingRecipe getBackingRecipe;
     RecipesRecyclerViewAdapter recipeRvAdapter;
     RecyclerView recipesRv;
     ArrayList<RecipesListItem> recipesListModel;
     boolean checkActiveDevice;
     LinearLayoutManager layoutManager;
+    RetrofitComponent retrofitComponent;
     Gson gson = new Gson();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        final RecipeClickListener recipeClickListener = this;
         recipesRv = findViewById(R.id.recipe_rv);
-        //Converting Json to Object
-        Type listType = new TypeToken<ArrayList<RecipesListItem>>() {}.getType();
-        recipesListModel = gson.fromJson(Utilities.readJsonFile("baking.json"), listType);
-        Log.d(TAG, "onCreate: Recipes Size "+recipesListModel.size());
-        recipeRvAdapter = new RecipesRecyclerViewAdapter(this,recipesListModel,this);
-        checkActiveDevice = getResources().getBoolean(R.bool.isTablet);
-        if(checkActiveDevice){
-            //Tablet device
-            layoutManager = new GridLayoutManager(this,3,GridLayoutManager.VERTICAL,false);
-        }
-        else {
-            //Phone device
-            layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
-        }
+        ((MyApplication) getApplication()).getRetrofitComponent().inject(this);
+        getBackingRecipe.getRecipes().enqueue(new Callback<ArrayList<RecipesListItem>>() {
+            @Override
+            public void onResponse(Call<ArrayList<RecipesListItem>> call, Response<ArrayList<RecipesListItem>> response) {
+                Log.d(TAG, "onResponse: "+response.body().size());
+                recipesListModel = response.body();
+                recipeRvAdapter = new RecipesRecyclerViewAdapter(MainActivity.this,recipesListModel,recipeClickListener);
+                checkActiveDevice = getResources().getBoolean(R.bool.isTablet);
+                if(checkActiveDevice){
+                    //Tablet device
+                    layoutManager = new GridLayoutManager(MainActivity.this,3,GridLayoutManager.VERTICAL,false);
+                }
+                else {
+                    //Phone device
+                    layoutManager = new LinearLayoutManager(MainActivity.this,LinearLayoutManager.VERTICAL,false);
+                }
 //        recipesRv.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-        recipesRv.setHasFixedSize(true);
-        recipesRv.setLayoutManager(layoutManager);
-        recipesRv.setAdapter(recipeRvAdapter);
+                recipesRv.setHasFixedSize(true);
+                recipesRv.setLayoutManager(layoutManager);
+                recipesRv.setAdapter(recipeRvAdapter);
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<RecipesListItem>> call, Throwable t) {
+
+            }
+        });
+        //Converting Json to Object
+
 
 
     }

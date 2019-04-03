@@ -62,7 +62,7 @@ public class RecipeMediaDetailsPhone extends AppCompatActivity implements View.O
         fragmentManager.beginTransaction().add(R.id.recipe_steps_container,recipeStepsDesc).commit();
         fragmentManager.beginTransaction().add(R.id.recipe_media_container,recipeMediaFragment).commit();
         Log.d(TAG, "onCreate: first item "+ stepsArrayList.get(currentStep).getDescription());
-
+        checkLastStep(currentStep);
         nextButton.setOnClickListener(this);
         previousButton.setOnClickListener(this);
     }

@@ -49,10 +49,26 @@ public class RecipeMediaFragment extends Fragment {
     private static final String TAG = "RecipeMediaFragment";
     PlayerView playerView;
     SimpleExoPlayer simpleExoPlayer;
-
+    private boolean autoPlay = false;
+    // used to remember the playback position
+    private int currentWindow;
+    private long playbackPosition;
+    public static final String AUTOPLAY = "autoplay";
+    public static final String CURRENT_WINDOW_INDEX = "current_window_index";
+    public static final String PLAYBACK_POSITION = "playback_position";    private long position;
     String mVideoUrl;
 
     public RecipeMediaFragment() {
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            playbackPosition = savedInstanceState.getLong(PLAYBACK_POSITION, 0);
+            currentWindow = savedInstanceState.getInt(CURRENT_WINDOW_INDEX, 0);
+            autoPlay = savedInstanceState.getBoolean(AUTOPLAY, false);
+        }
     }
 
     @Nullable
@@ -60,14 +76,21 @@ public class RecipeMediaFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.recipe_step_media_details_fragment, container, false);
         playerView = view.findViewById(R.id.videoFullScreenPlayer);
-        initializePlayer();
-        if(getResources().getBoolean(R.bool.isTablet))
-            buildMediaSource(Uri.parse(mVideoUrl));
+
+        setRetainInstance(true);
+//        initializePlayer();
+        if(getResources().getBoolean(R.bool.isTablet)){
+
+                    initializePlayer();
+                    buildMediaSource(Uri.parse(mVideoUrl));
+
+
+        }
         else {
             RecipeMediaDetailsPhone recipeMediaDetailsPhone = (RecipeMediaDetailsPhone) getActivity();
             if (recipeMediaDetailsPhone != null) {
             setVideo(recipeMediaDetailsPhone.setChosenVideo());
-            buildMediaSource(Uri.parse(mVideoUrl));
+//            buildMediaSource(Uri.parse(mVideoUrl));
 
             }
 //
@@ -134,14 +157,72 @@ public class RecipeMediaFragment extends Fragment {
                 // Prepare the player with the source.
                 simpleExoPlayer.prepare(videoSource);
 
-                simpleExoPlayer.setPlayWhenReady(true);
+
             }
 
         }
 
     @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (simpleExoPlayer == null) {
+            outState.putLong(PLAYBACK_POSITION, playbackPosition);
+            outState.putInt(CURRENT_WINDOW_INDEX, currentWindow);
+            outState.putBoolean(AUTOPLAY, autoPlay);
+        }
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (Util.SDK_INT > 23) {
+            initializePlayer();
+            buildMediaSource(Uri.parse(mVideoUrl));
+
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (Util.SDK_INT <= 23) {
+            releasePlayer();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (Util.SDK_INT > 23) {
+            releasePlayer();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: onResume Called");
+        if ((Util.SDK_INT <= 23 || simpleExoPlayer == null)) {
+            initializePlayer();
+        }
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
-        simpleExoPlayer.release();
     }
+
+    private void releasePlayer() {
+        if (simpleExoPlayer != null) {
+            // save the player state before releasing its resources
+            playbackPosition = simpleExoPlayer.getCurrentPosition();
+            currentWindow = simpleExoPlayer.getCurrentWindowIndex();
+            autoPlay = simpleExoPlayer.getPlayWhenReady();
+            simpleExoPlayer.release();
+            simpleExoPlayer = null;
+        }
+    }
+
+
 }
