@@ -22,6 +22,7 @@ import com.example.bakingapplicationnanodegree.R;
 import com.example.bakingapplicationnanodegree.ui.RecipeMediaDetailsPhone;
 import com.example.bakingapplicationnanodegree.util.MyApplication;
 import com.example.bakingapplicationnanodegree.util.VideoPlayerConfig;
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -49,40 +50,36 @@ public class RecipeMediaFragment extends Fragment {
     private static final String TAG = "RecipeMediaFragment";
     PlayerView playerView;
     SimpleExoPlayer simpleExoPlayer;
-    private boolean autoPlay = false;
-    // used to remember the playback position
-    private int currentWindow;
-    private long playbackPosition;
-    public static final String AUTOPLAY = "autoplay";
-    public static final String CURRENT_WINDOW_INDEX = "current_window_index";
-    public static final String PLAYBACK_POSITION = "playback_position";    private long position;
+    private int resumeWindow;
+    private long resumePosition;
+
     String mVideoUrl;
 
     public RecipeMediaFragment() {
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            playbackPosition = savedInstanceState.getLong(PLAYBACK_POSITION, 0);
-            currentWindow = savedInstanceState.getInt(CURRENT_WINDOW_INDEX, 0);
-            autoPlay = savedInstanceState.getBoolean(AUTOPLAY, false);
-        }
-    }
+//    @Override
+//    public void onCreate(@Nullable Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//        if (savedInstanceState != null) {
+//            playbackPosition = savedInstanceState.getLong(PLAYBACK_POSITION, 0);
+//            currentWindow = savedInstanceState.getInt(CURRENT_WINDOW_INDEX, 0);
+//            autoPlay = savedInstanceState.getBoolean(AUTOPLAY, false);
+//        }
+//    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.recipe_step_media_details_fragment, container, false);
         playerView = view.findViewById(R.id.videoFullScreenPlayer);
-
+        clearResumePosition();
         setRetainInstance(true);
 //        initializePlayer();
         if(getResources().getBoolean(R.bool.isTablet)){
 
                     initializePlayer();
-                    buildMediaSource(Uri.parse(mVideoUrl));
+//                    buildMediaSource(Uri.parse(mVideoUrl));
 
 
         }
@@ -117,12 +114,13 @@ public class RecipeMediaFragment extends Fragment {
     private void initializePlayer() {
         if (simpleExoPlayer == null) {
             // 1. Create a default TrackSelector
-            LoadControl loadControl = new DefaultLoadControl(
-                    new DefaultAllocator(true, 16),
-                    VideoPlayerConfig.MIN_BUFFER_DURATION,
-                    VideoPlayerConfig.MAX_BUFFER_DURATION,
-                    VideoPlayerConfig.MIN_PLAYBACK_START_BUFFER,
-                    VideoPlayerConfig.MIN_PLAYBACK_RESUME_BUFFER, -1, true);
+            LoadControl loadControl = new DefaultLoadControl();
+//            LoadControl loadControl = new DefaultLoadControl(
+//                    new DefaultAllocator(true, 16),
+//                    VideoPlayerConfig.MIN_BUFFER_DURATION,
+//                    VideoPlayerConfig.MAX_BUFFER_DURATION,
+//                    VideoPlayerConfig.MIN_PLAYBACK_START_BUFFER,
+//                    VideoPlayerConfig.MIN_PLAYBACK_RESUME_BUFFER, -1, true);
             BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
             TrackSelection.Factory videoTrackSelectionFactory =
                     new AdaptiveTrackSelection.Factory(bandwidthMeter);
@@ -130,7 +128,16 @@ public class RecipeMediaFragment extends Fragment {
                     new DefaultTrackSelector(videoTrackSelectionFactory);
             // 2. Create the player
             simpleExoPlayer = ExoPlayerFactory.newSimpleInstance(new DefaultRenderersFactory(getContext()), trackSelector, loadControl);
-            playerView.setPlayer(simpleExoPlayer);
+            playerView.setPlayer(simpleExoPlayer); 
+            buildMediaSource(Uri.parse(mVideoUrl));
+            simpleExoPlayer.setPlayWhenReady(true);
+
+            boolean haveResumePosition = resumeWindow != C.INDEX_UNSET;
+            if (haveResumePosition) {
+                Log.d(TAG, "initializePlayer: has resume point");
+                simpleExoPlayer.seekTo(resumeWindow, resumePosition);
+
+            }
 
         }
     }
@@ -165,30 +172,32 @@ public class RecipeMediaFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (simpleExoPlayer == null) {
-            outState.putLong(PLAYBACK_POSITION, playbackPosition);
-            outState.putInt(CURRENT_WINDOW_INDEX, currentWindow);
-            outState.putBoolean(AUTOPLAY, autoPlay);
-        }
+//        if (simpleExoPlayer == null) {
+//            outState.putLong(PLAYBACK_POSITION, playbackPosition);
+//            outState.putInt(CURRENT_WINDOW_INDEX, currentWindow);
+//            outState.putBoolean(AUTOPLAY, autoPlay);
+//        }
 
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        if (Util.SDK_INT > 23) {
-            initializePlayer();
-            buildMediaSource(Uri.parse(mVideoUrl));
+//        if (Util.SDK_INT > 23) {
+//            initializePlayer();
+//            buildMediaSource(Uri.parse(mVideoUrl));
 
         }
-    }
+
 
     @Override
     public void onPause() {
         super.onPause();
-        if (Util.SDK_INT <= 23) {
-            releasePlayer();
-        }
+//        if (Util.SDK_INT <= 23) {
+//            releasePlayer();
+//        }
+        releasePlayer();
+
     }
 
     @Override
@@ -203,7 +212,7 @@ public class RecipeMediaFragment extends Fragment {
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume: onResume Called");
-        if ((Util.SDK_INT <= 23 || simpleExoPlayer == null)) {
+        if (simpleExoPlayer == null) {
             initializePlayer();
         }
     }
@@ -213,16 +222,24 @@ public class RecipeMediaFragment extends Fragment {
         super.onDestroy();
     }
 
+    private void updateResumePosition() {
+        resumeWindow = simpleExoPlayer.getCurrentWindowIndex();
+        resumePosition = simpleExoPlayer.isCurrentWindowSeekable() ? Math.max(0, simpleExoPlayer.getCurrentPosition())
+                : C.TIME_UNSET;
+    }
+
+    private void clearResumePosition() {
+        resumeWindow = C.INDEX_UNSET;
+        resumePosition = C.TIME_UNSET;
+    }
+
     private void releasePlayer() {
         if (simpleExoPlayer != null) {
-            // save the player state before releasing its resources
-            playbackPosition = simpleExoPlayer.getCurrentPosition();
-            currentWindow = simpleExoPlayer.getCurrentWindowIndex();
-            autoPlay = simpleExoPlayer.getPlayWhenReady();
+            updateResumePosition();
+            simpleExoPlayer.stop();
             simpleExoPlayer.release();
             simpleExoPlayer = null;
         }
     }
-
 
 }
